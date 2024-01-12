@@ -1,0 +1,745 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+    
+  聊一聊聚合的持久化 - 雪松
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="雪松" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+ 
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:xuesong.tech ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+
+<script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?2a872bddaaec23626a7d591eb109f07c";
+    var s = document.getElementsByTagName("script")[0]; 
+    s.parentNode.insertBefore(hm, s);
+  })();
+  </script>
+  
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="_self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="https://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; 雪松</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+        
+        <li><a target="_self" href="index.html">Home</a></li>
+        
+        <li><a target="_self" href="archives.html">Archives</a></li>
+        
+
+    <li><label>Categories</label></li>
+
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>聊一聊聚合的持久化</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2019/10/17</span>
+
+          
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <p>本篇文章内容来自 <a href="https://github.com/meixuesong/aggregate-persistence">我的Github项目：Aggregate Persistence</a> Readme文件。</p>
+<p>这个项目源于我在做DDD咨询时的一个痛点。我们在做DDD时，不论EventStorming怎么Happy，到最后都会遇到一个痛点：分层架构落地。分层架构本身可以通过讲解和示例帮助团队掌握，但其中聚合的持久化却一直没有发现好的解决方案，写出来的代码自己都不是很满意。所以最后才有了这个项目，也欢迎大家使用并提宝贵建议。</p>
+<span id="more"></span><!-- more -->
+<blockquote>
+<p>DDD-China分享摘要：在DDD实践中，聚合应该作为一个整体进行读取和持久化，以确保业务规则不被破坏。然而现有的持久化技术(如ORM框架、Spring Data等)直接实现聚合持久化，特别是关系型数据库的持久化时，总是面临不少挑战。在本次分享中，我将以实际项目为例，探讨如何实现一种优雅的方案来解决这个问题。</p>
+</blockquote>
+<h2><a id="1%E7%AE%80%E4%BB%8B" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>1. 简介</h2>
+<p>领域驱动设计(DDD)已经被业界认为是行之有效的复杂问题解决之道。随着微服务的流行，DDD也被更多的团队采纳。然而在DDD落地时，聚合(Aggregate)的持久化一直缺少一种优雅的方式解决。</p>
+<p>在DDD实践中，聚合应该作为一个完整的单元进行读取和持久化，以确保业务的不变性或者说业务规则不变破坏。例如，订单总金额应该与订单明细金额之和一致。</p>
+<p>由于领域模型和数据库的数据模型可能不一致，并且聚合可能涉及多个实体，因此Hibernate, MyBatis和Spring Data等框架直接用于聚合持久化时，总是面临一些困难，而且代码也不够优雅。有人认为NoSQL是最适合聚合持久化的方案。确实如此，每个聚合实例就是一个文档，NoSQL天然为聚合持久化提供了很好的支持。然而并不是所有系统都适合用NoSQL。当遇到关系型数据库时，一种方式是将领域事件引入持久化过程。也就是在处理业务过程中，聚合抛出领域事件，Repository根据领域事件的不同，执行不同的SQL，完成数据库的修改。但这样的话，Repository层就要引入一些逻辑判断，代码冗余增加了维护成本。</p>
+<p>本项目旨在提供一种轻量级聚合持久化方案，帮助开发者真正从业务出发设计领域模型，不需要考虑持久化的事情。在实现Repository持久化时，不需要考虑业务逻辑，只负责聚合的持久化，从而真正做到关注点分离。</p>
+<p>方案的核心是<code>Aggregate&lt;T&gt;</code>容器，T是聚合根的类型。Repository以<code>Aggregate&lt;T&gt;</code>为核心，当Repository查询或保存聚合时，返回的不是聚合本身，而是聚合容器<code>Aggregate&lt;T&gt;</code>。以订单付款结账为例，Application Service的代码如下：</p>
+<pre><code class="language-java">@Transactional
+public void checkout(String orderId, CheckoutRequest request) {
+    Aggregate&lt;Order&gt; aggregate = orderRepository.findById(orderId);
+    Order order = aggregate.getRoot();
+
+    Payment payment = new Payment(PaymentType.from(request.getPaymentType()), request.getAmount());
+    order.checkout(payment);
+
+    orderRepository.save(aggregate);
+}
+</code></pre>
+<p><code>Aggregate&lt;T&gt;</code>保留了聚合的历史快照，因此在Repository保存聚合时，就可以与快照进行对比，找到需要修改的实体和字段，然后完成持久化工作。它提供以下功能：</p>
+<ul>
+<li><code>public R getRoot()</code>：获取聚合根</li>
+<li><code>public R getRootSnapshot()</code>: 获取聚合根的历史快照</li>
+<li><code>public boolean isChanged()</code>: 聚合是否发生了变化</li>
+<li><code>public boolean isNew()</code>：是否为新的聚合</li>
+<li><code>public &lt;T&gt; Collection&lt;T&gt; findNewEntities(Function&lt;R, Collection&lt;T&gt;&gt; getCollection, Predicate&lt;T&gt; isNew)</code>：在实体集合（例如订单的所有订单明细行中）找到新的实体</li>
+<li><code>public &lt;T, ID&gt; Collection&lt;T&gt; findChangedEntities(Function&lt;R, Collection&lt;T&gt;&gt; getCollection, Function&lt;T, ID&gt; getId)</code>：在实体集合（例如所有订单明细行中）找到发生变更的实体</li>
+<li><code>public &lt;T, ID&gt; Collection&lt;T&gt; findRemovedEntities(Function&lt;R, Collection&lt;T&gt;&gt; getCollection, Function&lt;T, ID&gt; getId)</code>：在实体集合（例如所有订单明细行中）找到已经删除的实体</li>
+</ul>
+<p>工具类<code>DataObjectUtils</code>提供了对象的对比功能。它可以帮助你修改数据库时只update那些变化了的字段。以Person为例，<code>DataObjectUtils.getDelta(personSnapshot, personCurrent)</code>将返回Delta值。如果属性没有发生变化，Delta的对应属性值为null, 否则为修改后的值。下表展示了这种差别，personCurrent是当前值，personSnapshot是旧值。</p>
+<p><img src="media/16980608396177/clipboardimage.jpg" alt="" /><br />
+Object | ID | NAME | AGE | ADDRESS | VERSION<br />
+—————— |——|——|——|——|——<br />
+personCurrent | 001 | Mike | 20 | Beijing | 1<br />
+personSnapshot | 001 | Mike | 21 | Shanghai | 1<br />
+delta | null | null | 21 | Shanghai | null</p>
+<p>与Hibernate的<code>@Version</code>类似，聚合根需要实现Versionable接口，以便Repository基于Version实现乐观锁。Repository对聚合的所有持久化操作，都要判断Version。示意SQL如下：</p>
+<pre><code class="language-sql">    insert into person (id, name, age, address, version )
+    values (#{id}, #{name}, #{age}, #{address}, 1)
+
+    update person set age = #{age}, address = #{address}, version = version + 1
+    where id = #{id} and version = #{version}
+    
+    delete person
+    where id = #{id} and version = #{version}
+</code></pre>
+<h2><a id="2%E4%BD%BF%E7%94%A8-aggregate-persistence" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. 使用Aggregate-Persistence</h2>
+<p>在项目中加入以下依赖，就可以使用Aggregate-persistence的功能了：</p>
+<pre><code class="language-xml">        &lt;dependency&gt;
+            &lt;groupId&gt;com.github.meixuesong&lt;/groupId&gt;
+            &lt;artifactId&gt;aggregate-persistence&lt;/artifactId&gt;
+            &lt;version&gt;1.0.0&lt;/version&gt;
+        &lt;/dependency&gt;
+</code></pre>
+<h2><a id="3%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>3. 使用示例</h2>
+<p>Aggregate-Persistence本身并不负责持久化工作，它是一个工具，用于识别聚合的变更，例如发现有新增、修改和删除的实体，真正的持久化工作由你的Repository实现。</p>
+<p>接下来我们通过<a href="https://github.com/meixuesong/aggregate-persistence-sample">订单聚合持久化项目</a>展示Repository如何利用Aggregate-Persistence的功能，实现订单聚合的持久化。该项目的技术栈使用Springboot, MyBatis。</p>
+<p>订单聚合包括两个实体：订单（Order）和订单明细行（OrderItem），其中订单是聚合根：</p>
+<pre><code class="language-java">public class Order implements Versionable {
+    private String id;
+    private Date createTime;
+    private Customer customer;
+    private List&lt;OrderItem&gt; items;
+    private OrderStatus status;
+    private BigDecimal totalPrice;
+    private BigDecimal totalPayment;
+    private int version;
+}
+
+public class OrderItem {
+    private Long id;
+    private Product product;
+    private BigDecimal amount;
+    private BigDecimal subTotal;
+}
+</code></pre>
+<p>OrderRepository完成订单的持久化工作，主要方法如下：</p>
+<pre><code class="language-java">public class OrderRepository {
+    Aggregate&lt;Order&gt; findById(String orderId);
+    void save(Aggregate&lt;Order&gt; orderAggregate);
+    void remove(Aggregate&lt;Order&gt; orderAggregate);
+}
+</code></pre>
+<p>在本例中，OrderRepository需要完成订单的新增、订单项的修改（如购买数量变化或者移除了某个商品）、订单的删除功能。由于领域模型与数据模型不一致，因此保存时，Repository将Domain model(Order)转换成Data object(OrderDO)，然后使用MyBatis完成持久化。查询时，进行反向操作，将Data object转换成Domain model.</p>
+<h3><a id="3-1%E6%9F%A5%E8%AF%A2%E8%AE%A2%E5%8D%95" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>3.1 查询订单</h3>
+<p>下面的代码用于查询订单，并返回<code>Aggregate&lt;Order&gt;</code>。当查询数据库并创建Order聚合后，调用<code>AggregateFactory.createAggregate</code>创建<code>Aggregate&lt;T&gt;</code>对象，在<code>Aggregate&lt;T&gt;</code>内部，它将自动保存Order的快照，以供后续对比。</p>
+<pre><code class="language-java">public Aggregate&lt;Order&gt; findById(String id) {
+    OrderDO orderDO = orderMapper.selectByPrimaryKey(id);
+    if (orderDO == null) {
+        throw new EntityNotFoundException(“Order(“ + id + “) not found”);
+    }
+
+    Order order = orderDO.toOrder();
+    order.setCustomer(customerRepository.findById(orderDO.getCustomerId()));
+    order.setItems(getOrderItems(id));
+
+    return AggregateFactory.createAggregate(order);
+}
+</code></pre>
+<h3><a id="3-2%E4%BF%9D%E5%AD%98%E6%96%B0%E5%A2%9E%E8%AE%A2%E5%8D%95%E3%80%81%E4%BF%AE%E6%94%B9%E8%AE%A2%E5%8D%95" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>3.2 保存新增订单、修改订单</h3>
+<p>使用<code>save</code>接口方法完成订单及订单明细行的新增、修改和删除操作。示例代码如下：</p>
+<pre><code class="language-java">void save(Aggregate&lt;Order&gt; orderAggregate) {
+    if (orderAggregate.isNew()) {
+        //insert order
+        Order order = orderAggregate.getRoot();
+        orderMapper.insert(new OrderDO(order));
+        //insert order items
+        List&lt;OrderItemDO&gt; itemDOs = order.getItems().stream()
+            .map(item -&gt; new OrderItemDO(order.getId(), item))
+            .collect(Collectors.toList());
+        orderItemMapper.insertAll(itemDOs);
+    } else if (orderAggregate.isChanged()) {
+        //update order 
+        updateAggregateRoot(orderAggregate);
+        //delete the removed order items from DB
+        removeOrderItems(orderAggregate);
+        //update the changed order items
+        updateOrderItems(orderAggregate);
+        //insert the new order items into DB
+        insertOrderItems(orderAggregate);
+    }
+}
+</code></pre>
+<p>上例代码中，当<code>orderAggregate.isNew()</code>为true时，调用MyBatis Mapper插入数据。否则如果聚合已经被修改，则需要更新数据。</p>
+<p>首先更新聚合根。领域对象(Order)首先被转换成数据对象（OrderDO），然后DataObjectUtils对比OrderDO的历史版本，得到Delta值，最终调用MyBatis的update selective方法更新到数据库中。代码如下：</p>
+<pre><code class="language-java">private void updateAggregateRoot(Aggregate&lt;Order&gt; orderAggregate) {
+    //get changed fields and its value
+    OrderDO delta = getOrderDODelta(orderAggregate);
+    //only update changed fields, avoid update all fields: 
+    // e.g. update sales_order set xxx = ?, version = version + 1 where id = ? and version = ?
+    if (orderMapper.updateByPrimaryKeySelective(delta) != 1) {
+        throw new OptimisticLockException(
+            String.format(&quot;Update order (%s) error, it’s not found or changed by another user&quot;, 
+                orderAggregate.getRoot().getId())
+        );
+    }
+}
+
+private OrderDO getOrderDODelta(Aggregate&lt;Order&gt; orderAggregate) {
+    OrderDO current = new OrderDO(orderAggregate.getRoot());
+    OrderDO old = new OrderDO(orderAggregate.getRootSnapshot());
+    //compare field by field, if field is not changed, its value is null, otherwise its value is current new value
+    OrderDO delta = DataObjectUtils.getDelta(old, current);
+    //because id and version are unchanged, their value are null, so set to new value, and then the mapper can update by id and version
+    delta.setId(current.getId());
+    delta.setVersion(current.getVersion());
+
+    return delta;
+}
+</code></pre>
+<p>对于订单明细行的增删改，都是通过Aggregate找到新增、删除和修改的实体，然后完成数据库操作。代码示例如下：</p>
+<pre><code class="language-java">private void removeOrderItems(Aggregate&lt;Order&gt; orderAggregate) {
+    Collection&lt;OrderItem&gt; removedEntities = orderAggregate.findRemovedEntities(Order::getItems, OrderItem::getId);
+    removedEntities.stream().forEach((item) -&gt; {
+        if (orderItemMapper.deleteByPrimaryKey(item.getId()) != 1) {
+            throw new OptimisticLockException(
+                String.format(&quot;Delete order item (%d) error, it's not found&quot;, item.getId())
+            );
+        }
+    });
+}
+
+private void updateOrderItems(Aggregate&lt;Order&gt; orderAggregate) {
+    Collection&lt;OrderItem&gt; updatedEntities = orderAggregate.findChangedEntities(Order::getItems, OrderItem::getId);
+    updatedEntities.stream().forEach((item) -&gt; {
+        if (orderItemMapper.updateByPrimaryKey(new OrderItemDO(orderAggregate.getRoot().getId(), item)) != 1) {
+            throw new OptimisticLockException(
+                String.format(&quot;Update order item (%d) error, it’s not found&quot;, item.getId())
+            );
+        }
+    });
+}
+
+private void insertOrderItems(Aggregate&lt;Order&gt; orderAggregate) {
+    //OrderItem.getId()为空表示新增实体
+    Collection&lt;OrderItem&gt; newEntities = orderAggregate.findNewEntities(Order::getItems, (item) -&gt; item.getId() == null);
+    if (newEntities.size() &gt; 0) {
+        List&lt;OrderItemDO&gt; itemDOs = newEntities.stream()
+            .map(item -&gt; new OrderItemDO(orderAggregate.getRoot().getId(), item))
+            .collect(Collectors.toList());
+        orderItemMapper.insertAll(itemDOs);
+    }
+}
+</code></pre>
+<p><code>Aggregate&lt;T&gt;</code>提供的<code>findXXXEntities</code>系列方法，都是针对订单明细行这样的实体集合。例如订单明细中，可能增加了商品A，修改了商品B的数量，删除了商品C。<code>findXXXEntities</code>方法用于找出这些变更。第1个参数是函数式接口，用于获取实体集合，以便在此集合中识别新增、修改和删除的实体。第2个参数也是函数式接口，获得实体主键值以找到同一实体进行对比（findRemovedEntities, findChangedEntities）或者判断是否为新的实体（findNewEntities）。</p>
+<p>需要提醒的是，当聚合发生变化时，不论聚合根是否发生变化，都应该修改聚合根的版本号，以确保聚合作为一个整体被修改。</p>
+<h3><a id="3-3%E5%88%A0%E9%99%A4%E8%AE%A2%E5%8D%95" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>3.3 删除订单</h3>
+<p>删除订单的同时，需要删除所有订单明细行。</p>
+<pre><code class="language-java">public void remove(Aggregate&lt;Order&gt; aggregate) {
+    Order order = aggregate.getRoot();
+    if (orderMapper.delete(new OrderDO(order)) != 1) {
+        throw new OptimisticLockException(
+            String.format(“Delete order (%s) error, it’s not found or changed by another user”, order.getId())
+        );
+    }
+    orderItemMapper.deleteByOrderId(order.getId());
+}
+</code></pre>
+<p>完整的示例代码见<a href="https://github.com/meixuesong/aggregate-persistence-sample">订单聚合持久化项目</a></p>
+<h2><a id="4%E6%80%BB%E7%BB%93" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>4. 总结</h2>
+<p>总的来说，本项目提供了一种轻量级聚合持久化方案，能够帮助开发者设计干净的领域模型的同时，很好地支持Repository做持久化工作。通过持有聚合根的快照，<code>Aggregate&lt;T&gt;</code>可以识别聚合发生了哪些变化，然后Repository使用基于Version的乐观锁和DataObjectUtils在字段属性级别的比较功能，实现按需更新数据库。</p>
+<h2><a id="%E5%8F%8D%E9%A6%88%E6%94%B6%E9%9B%86" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>反馈收集</h2>
+<p>战菲：</p>
+<ul>
+<li>Repo.save时，会先查询一遍聚合，然后手工对比得出差异，再用jooq完成数据修改。</li>
+<li>没有version，部分地方使用select for update悲观锁。如果没有使用悲观锁的情况下，可能会出现覆盖其他用户的修改。（例如查询后保存前，其他用户又修改了数据）</li>
+<li>主要问题：
+<ul>
+<li>查2遍</li>
+<li>手工对比，代码太乱</li>
+<li>没有处理并发修改的问题</li>
+</ul>
+</li>
+<li>Aggregate-Persistence能够解决上述3个主要问题</li>
+</ul>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="16981081172207.html" 
+          title="Previous Post: 你值得拥有的一份开发者书单">&laquo; 你值得拥有的一份开发者书单</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="16980644116144.html" 
+          title="Next Post: 以提升员工绩效为目标，打造完美培训">以提升员工绩效为目标，打造完美培训 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="https://mxs-1256616343.cos.ap-chengdu.myqcloud.com/mweb-blog-logo.png" /></div>
+            
+                <h1>雪松</h1>
+                <div class="site-des">关于技术的思考</div>
+                <div class="social">
+
+
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/meixuesong" title="GitHub">GitHub</a>
+
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="guan-yu-wowo-shi-mei-xue-song.html">关于我</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="17048572291123.html">嵌入式系统，如何一次把事情做对？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="17042360951377.html">什么？带团队你还不知道怎么排兵布阵？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="17037655703316.html">嵌入式系统的团队设计——团队优先</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="17035756228983.html">嵌入式系统的需求管理——如何将交付效率提升一倍？</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2023
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">MathJax.Hub.Config({TeX: { equationNumbers: { autoNumber: "AMS" } }});</script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="asset/prism.js"></script>
+
+
+<style type="text/css">
+figure{margin: 0;padding: 0;}
+figcaption{text-align:center;}
+
+/* PrismJS 1.14.0
+ http://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javascript */
+/**
+ * prism.js default theme for JavaScript, CSS and HTML
+ * Based on dabblet (http://dabblet.com)
+ * @author Lea Verou
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+    color: black;
+    background: none;
+    text-shadow: 0 1px white;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+    
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+    
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+}
+
+pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
+code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
+    text-shadow: none;
+    background:#b3d4fc;
+}
+
+pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
+code[class*="language-"]::selection, code[class*="language-"] ::selection {
+    text-shadow: none;
+    background: #b3d4fc;
+}
+
+@media print {
+    code[class*="language-"],
+    pre[class*="language-"] {
+        text-shadow: none;
+    }
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+    padding: 1em;
+    margin: .5em 0;
+    overflow: auto;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+    background: #F7F7F7;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+    padding: .1em;
+    border-radius: .3em;
+    white-space: normal;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: slategray;
+}
+
+.token.punctuation {
+    color: #999;
+}
+
+.namespace {
+    opacity: .7;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+    color: #905;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+    color: #690;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+    color: #9a6e3a;
+    background: hsla(0, 0%, 100%, .5);
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+    color: #07a;
+}
+
+.token.function,
+.token.class-name {
+    color: #DD4A68;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+    color: #e90;
+}
+
+.token.important,
+.token.bold {
+    font-weight: bold;
+}
+.token.italic {
+    font-style: italic;
+}
+
+.token.entity {
+    cursor: help;
+}
+
+
+pre[class*="language-"].line-numbers {
+    position: relative;
+    padding-left: 3.8em;
+    counter-reset: linenumber;
+}
+
+pre[class*="language-"].line-numbers > code {
+    position: relative;
+    white-space: inherit;
+}
+
+.line-numbers .line-numbers-rows {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    font-size: 100%;
+    left: -3.8em;
+    width: 3em; /* works for line-numbers below 1000 lines */
+    letter-spacing: -1px;
+    border-right: 1px solid #999;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+}
+
+    .line-numbers-rows > span {
+        pointer-events: none;
+        display: block;
+        counter-increment: linenumber;
+    }
+
+        .line-numbers-rows > span:before {
+            content: counter(linenumber);
+            color: #999;
+            display: block;
+            padding-right: 0.8em;
+            text-align: right;
+        }
+
+</style>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+
+
+  </body>
+</html>
