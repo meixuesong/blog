@@ -233,7 +233,7 @@ brick.build();
 //Person.java
 brick.strike();
 </code></pre>
-<p>**接口隔离原则本质上也是单一职责原则的体现，同时它也服务于里氏替换原则。**而接下来介绍的依赖倒置原则可以用来指导接口隔离原则的实现。</p>
+<p><strong>接口隔离原则本质上也是单一职责原则的体现，同时它也服务于里氏替换原则</strong>。而接下来介绍的依赖倒置原则可以用来指导接口隔离原则的实现。</p>
 <h2><a id="%E4%BE%9D%E8%B5%96%E5%80%92%E7%BD%AE%E5%8E%9F%E5%88%99dependence-inversion-principle" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>依赖倒置原则 (Dependence Inversion Principle)</h2>
 <p>依赖倒置原则说的是高层模块不应该依赖底层模块，两者都应该依赖其抽象。</p>
 <p><strong>这个原则其实是在指导如何实现接口隔离原则</strong>，也就是前文提到的，高层的消费者不应该依赖于具体实现，应该由消费者定义并依赖于Role interface，底层的具体实现也依赖于Role interface，因为它要实现此接口。</p>
