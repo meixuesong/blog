@@ -4,7 +4,7 @@
   <title><![CDATA[雪松]]></title>
   <link href="https://xuesong.tech/atom.xml" rel="self"/>
   <link href="https://xuesong.tech/"/>
-  <updated>2024-01-17T06:04:30+08:00</updated>
+  <updated>2024-01-17T06:06:24+08:00</updated>
   <id>https://xuesong.tech/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -810,7 +810,7 @@ XX方案一般由主站发送报文，由TM将报文下发，并将设备返回�
     <updated>2023-10-23T14:00:25+08:00</updated>
     <id>https://xuesong.tech/16980408257389.html</id>
     <content type="html"><![CDATA[
-<p>源文：<a href="https://martinfowler.com/articles/201701-event-driven.html">What do you mean by “Event-Driven”?</a></p>
+<p>原文：<a href="https://martinfowler.com/articles/201701-event-driven.html">What do you mean by “Event-Driven”?</a></p>
 <p>去年年底，我和ThoughtWorks同事一起参加了一个研讨会，讨论“事件驱动”的本质。过去的几年里，我们构建的很多系统都大量使用了事件。对于这些系统，人们常常赞誉有加，但批评的声音也不绝于耳。我们的北美办公室组织了一次峰会，来自世界各地的ThoughtWorks资深开发者出席会议并分享了他们的想法。</p>
 <p>这次峰会的最大成果是认识到当人们谈论“事件”时，实际上说的是完全不同的东西，所以我们花了很多时间来梳理一些有用的模式。本文简要总结我们的成果。</p>
 <span id="more"></span><!-- more -->
