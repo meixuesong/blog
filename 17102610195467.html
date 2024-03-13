@@ -1,0 +1,594 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="asset/img/xs.png" />
+    <title>
+    
+  嵌入式系统的代码设计——实现灵活可扩展可替换的代码 - 雪松
+  
+  </title>
+  
+  
+  <link href="atom.xml" rel="alternate" title="雪松" type="application/atom+xml">
+    <link rel="stylesheet" href="asset/css/foundation.min.css" />
+    <link rel="stylesheet" href="asset/css/docs.css" />
+    <script src="asset/js/vendor/modernizr.js"></script>
+    <script src="asset/js/vendor/jquery.js"></script>
+ 
+<script type="text/javascript">
+  function before_search(){
+    var searchVal = 'site:xuesong.tech ' + document.getElementById('search_input').value;
+    document.getElementById('search_q').value = searchVal;
+    return true;
+  }
+</script>
+
+<script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?2a872bddaaec23626a7d591eb109f07c";
+    var s = document.getElementsByTagName("script")[0]; 
+    s.parentNode.insertBefore(hm, s);
+  })();
+  </script>
+  
+  </head>
+  <body class="antialiased hide-extras">
+    
+    <div class="marketing off-canvas-wrap" data-offcanvas>
+      <div class="inner-wrap">
+
+
+<nav class="top-bar docs-bar hide-for-small" data-topbar>
+
+
+  <section class="top-bar-section">
+  <div class="row">
+      <div style="position: relative;width:100%;"><div style="position: absolute; width:100%;">
+        <ul id="main-menu" class="left">
+        
+        <li id=""><a target="_self" href="index.html">Home</a></li>
+        
+        <li id=""><a target="_self" href="archives.html">Archives</a></li>
+        
+        </ul>
+
+        <ul class="right" id="search-wrap">
+          <li>
+<form target="_blank" onsubmit="return before_search();" action="https://google.com/search" method="get">
+    <input type="hidden" id="search_q" name="q" value="" />
+    <input tabindex="1" type="search" id="search_input"  placeholder="Search"/>
+</form>
+</li>
+          </ul>
+      </div></div>
+  </div>
+  </section>
+
+</nav>
+
+        <nav class="tab-bar show-for-small">
+  <a href="javascript:void(0)" class="left-off-canvas-toggle menu-icon">
+    <span> &nbsp; 雪松</span>
+  </a>
+</nav>
+
+<aside class="left-off-canvas-menu">
+      <ul class="off-canvas-list">
+        
+        <li><a target="_self" href="index.html">Home</a></li>
+        
+        <li><a target="_self" href="archives.html">Archives</a></li>
+        
+
+    <li><label>Categories</label></li>
+
+         
+
+      </ul>
+    </aside>
+
+<a class="exit-off-canvas" href="#"></a>
+
+
+        <section id="main-content" role="main" class="scroll-container">
+        
+       
+
+ <script type="text/javascript">
+  $(function(){
+    $('#menu_item_index').addClass('is_active');
+  });
+</script>
+<div class="row">
+  <div class="large-8 medium-8 columns">
+      <div class="markdown-body article-wrap">
+       <div class="article">
+          
+          <h1>嵌入式系统的代码设计——实现灵活可扩展可替换的代码</h1>
+     
+        <div class="read-more clearfix">
+          <span class="date">2024/03/13</span>
+
+          
+           
+         
+          <span class="comments">
+            
+
+            
+          </span>
+
+        </div>
+      </div><!-- article -->
+
+      <div class="article-content">
+      <p>书接上回，码意浓在与大师深入探讨了架构设计后，便投身于全新嵌入式系统的开发工作。忙碌的日子里，他的内心却始终萦绕着一个未解的疑惑：新系统要如何通过统一的代码，灵活地应对全国各省的差异化需求？大师曾提及的“组件化”概念，这些组件要能够扩展、替换和编排，从而实现高度的可扩展性和可配置性。这些想法一直在他脑海中回响，但他却苦于无法将这一理念落地。于是，他决定再次拜访大师，寻求指点。</p>
+<p><strong>码意浓</strong>：大师，我又来了。</p>
+<p><strong>大师</strong>：哈哈，欢迎啊，小码。你无事不登三宝殿，是不是有什么新进展想和我分享？</p>
+<span id="more"></span><!-- more -->
+<p><strong>码意浓</strong>：嘿嘿，大师，最近项目进展得还算顺利，关于上次你提到的可扩展、可替换和可编排的架构设计，我还有一些具体实现上的问题想请教你。</p>
+<p><strong>大师</strong>：你有什么想法？</p>
+<p><strong>码意浓</strong>：能实现这样的扩展性，当然很好。但我的疑问是，我只在书里看到过这样的想法，从来没看哪个项目做到过。所以，这个问题一直困扰我。这种扩展性能实现吗？怎么实现呢？</p>
+<p><strong>大师</strong>：很好，你这个问题问得很到位。要实现可扩展和可替换的设计，你一定要了解SOLID原则。</p>
+<p><strong>码意浓</strong>：你是说 Bob 大叔提出的 SOLID 原则，也就是单一职责、开闭原则、里氏替换原则、接口隔离原则和依赖反转吗？</p>
+<p><strong>大师</strong>：是的。这是 Bob 大叔将几个重要设计原则总结在一起，非常经典。</p>
+<p><strong>码意浓</strong>：说实话，这些原则我都看过不止一遍。字我都认识，也好像都理解，但就是不知道怎么做到。</p>
+<p><strong>大师</strong>：这些原则就像武功心法，是需要一定功底才能掌握的。但我觉得你是有基础的，你只是需要一根线把这些珍珠串起来，一旦成功串起来，就会有打通任督二脉的感觉。</p>
+<p><strong>码意浓</strong>：怎么才能串起来呢？</p>
+<p><strong>大师</strong>：我建议你先阅读这篇博客：<a href="https://xuesong.tech/16980614178175.html">写了这么多年代码，你真的了解SOLID吗？</a>，它详细解释了SOLID原则以及各原则之间的关系，而且还有示例代码。</p>
+<p><strong>码意浓</strong>：好，我先学习一下。</p>
+<p><strong>大师</strong>：正好我也要去冲杯咖啡，你也来一杯？</p>
+<p><strong>码意浓</strong>：好的，谢谢大师！</p>
+<p>稍候</p>
+<p><strong>码意浓</strong>：我已经看了那篇博客，第一次真正体会到SOLID这几个原则之间的关系，确实有深度！但我还是有点迷茫，不知道如何在实际代码中应用这些原则。</p>
+<p><strong>大师</strong>：没关系，我们可以从你的目标出发，你的目标是什么？</p>
+<p><strong>码意浓</strong>：我的目标是实现组件能够扩展、替换，从而实现高度的可扩展性和可配置性。</p>
+<p><strong>大师</strong>：那你觉得最能体现你目标的是哪个原则？</p>
+<p><strong>码意浓</strong>：我想应该是开闭原则。开闭原则说的是对扩展开放，对修改闭合。意思是不用修改，而是直接扩展。</p>
+<p><strong>大师</strong>：是的，你可以通过扩展，而不是修改来改变软件的行为。</p>
+<p><strong>码意浓</strong>：虽然我认同这一点，但我觉得有点抽象。</p>
+<p><strong>大师</strong>：比如一个 USB 端口可以扩展，你可以插入任何 USB 设备，不需要做任何修改来接受一个新的设备。因此，对于 USB 设备来讲，你这台有 USB 接口的电脑就是对扩展开放，对修改封闭的。</p>
+<p><strong>码意浓</strong>：也就是说，当软件需要变化时，我们可以通过添加新的代码来实现新功能，而不是修改现有的代码。这就像是在搭积木，你可以不断地添加新的积木块来扩展结构，而不需要破坏已经搭好的部分。</p>
+<p><strong>大师</strong>：是的。一方面就像你说的，可以添加新的代码来增加新功能。另一方面，也可以通过替换的方式来扩展。</p>
+<p><strong>码意浓</strong>：怎么理解？</p>
+<p><strong>大师</strong>：就像你的机械硬盘太慢了，你替换成固态硬盘。笔记本屏幕太小了，你外接一个大显示器。在编程中，我们可以通过抽象和继承来实现开闭原则。例如，你可以定义一个基类或接口，然后创建不同的子类或实现类来扩展功能。</p>
+<p><strong>码意浓</strong>：对应到我这个系统里面，同样一种采集任务，但有的省份不一样，我就可以用一个新的实现来替换掉标准实现？这是不是策略模式？</p>
+<p><strong>大师</strong>：替换的方式通常涉及到策略模式。策略模式是一种行为设计模式，它使你能在运行时改变对象的行为。你可以定义一系列算法或业务处理逻辑，并将每一个算法封装起来，使它们可以互相替换。这样，你就可以根据上下文的不同选择不同的策略来满足业务需要。</p>
+<p>例如，假设你的系统需要根据不同的省份来处理订单支付方式。你可以定义一个支付策略的接口，并为每个省份实现具体的支付策略。然后，在运行时，你可以根据省份信息来选择相应的支付策略进行处理。</p>
+<p><strong>码意浓</strong>：我懂了，这不就是 if/else 吗？我们老系统里就是 if/else 太多、太深导致很难维护。</p>
+<p><strong>大师</strong>：你说得对，太多的 if/else 确实容易导致代码难以维护。但是，策略模式并不是简单地用 if/else 来判断。策略模式通常只在很少的地方进行 if/else 判断，甚至不需要判断。它通常是通过配置或者上下文信息来动态地选择策略。一旦选择了某个策略，后续的操作就与该策略相关，而不再与其他策略有关系。</p>
+<p>例如，你可以将策略选择逻辑封装在一个工厂类或者配置文件中，这样就不需要在业务代码中频繁地使用if/else 来判断了。</p>
+<p><strong>码意浓</strong>：原来如此，策略模式确实是一种更优雅的方式来处理业务变化。这就像是在玩乐高积木，可以方便地替换掉某一块积木。</p>
+<p>但是，我想到一个问题，如果我们的系统非常大，要想替换掉某一部分功能，似乎还是一件挺难的事情。</p>
+<p><strong>大师</strong>：你说得对，替换大型系统中的某一部分功能确实是一个挑战。这就需要你在设计系统时，尽量识别出大小合适的组件，并定义好它们之间的接口。这样，你就可以通过替换组件来实现功能的替换，而不需要修改整个系统。</p>
+<p>这就涉及到了里氏替换原则。里氏替换原则告诉我们，子类必须能够替换其父类，并且替换后系统的行为要保持一致。这就要求我们在设计接口和类时，要遵循一定的规范，确保子类能够正确地替换父类。</p>
+<p><strong>码意浓</strong>：里氏替换原则听起来很高级，但在C语言中如何实现呢？</p>
+<p><strong>大师</strong>：在C语言中实现里氏替换原则，你需要更加注意接口的设计和组件的独立性。你可以通过函数指针类型来实现。这样，你就可以在运行时替换掉某个组件的实现，而不需要修改调用该组件的代码。</p>
+<p><strong>码意浓</strong>：原来我在实际编程中偶尔也用到了这些方法，但没有去思考它们与SOLID原则的关系。不过，我在现实代码中发现，即使我定义了接口，仍然很难做到真正的复用或者替换。这是为什么呢？</p>
+<p><strong>大师</strong>：这是一个很常见的问题。很多时候，我们的组件设计得太大了，接口也过于臃肿。这就导致我们的组件像鸡肋一样——有点用，但用起来不方便或者成本很高。</p>
+<p>打个比方，如果你有一个工具箱，里面有各种各样的工具，包括扳手、螺丝刀、锤子等等。你还有一个便携式的多功能瑞士军刀，它里面也有小扳手、螺丝刀等工具。等你真正干活的时候，你会发现多功能瑞士军刀虽然也有用，但就是没有你工具箱里面的工具好用。</p>
+<p><strong>码意浓</strong>：你是说，单一职责的扳手，比多功能瑞士军刀更好用？确实职责单一、固定大小的扳手会更好用一些。</p>
+<p><strong>大师</strong>：同样的道理，如果你的组件接口过于复杂，包含了太多的功能，那么其他开发者在使用你的组件时就会感到困惑和不便。他们可能只需要用到其中的一部分功能，但却不得不面对整个复杂的接口。</p>
+<p><strong>码意浓</strong>：是的，功能多了，意味着依赖多了，想单独利用某个功能或者扩展某个功能时变得困难了，学习成本也高了。那应该怎么解决呢？</p>
+<p><strong>大师</strong>：所以你要考虑接口隔离原则。这个原则告诉我们，应该尽量将接口细化，每个接口只承担一种角色。这样，其他开发者在使用你的组件时，就可以只关注他们需要的接口，而不需要关心其他不相关的接口。</p>
+<p>这其实也是单一职责原则的体现。每个组件或者接口都应该只有一个引起变化的原因。如果你发现你的接口承担了太多的职责，那么就应该考虑将它拆分成更小的接口。</p>
+<p><strong>码意浓</strong>：我明白了，接口隔离原则确实可以帮助我们设计出更易于使用和复用的组件。我在阅读那篇博客时，发现以往我们都是站在服务端来定义接口，而不是向博客中提到的，应该站在消费者的角度定义接口。</p>
+<p><strong>大师</strong>：是啊，如果你是房产商，最简单的办法是把所有房子都盖成一样的，这样成本最低了。但你肯定就卖不出去了，因为你没有站在消费者的角度去做设计。</p>
+<p><strong>码意浓</strong>：嘿嘿，这个比较容易理解。只要站位正确就不容易犯错了。从现在开始，我们要从消费者的角度去定义单一职责的组件，它的接口是 Role Interface，这样的组件比较小，就很容易满足里氏替换原则，从而很容易扩展和替换，使我们能够满足开闭原则。</p>
+<p><strong>大师</strong>：你的理解很到位！</p>
+<p><strong>码意浓</strong>：那最后一个依赖倒置原则呢？它似乎更侧重于面向对象编程的思想。而我正在使用的是C语言，这是一种过程性语言。依赖倒置原则是否也适用于C语言呢？</p>
+<p><strong>大师</strong>：当然适用。依赖倒置原则的核心思想是：要依赖于抽象，不要依赖于具体实现。这并不仅仅是面向对象编程的专利，它同样适用于过程性语言如C语言。</p>
+<p><strong>码意浓</strong>：让我想想。这篇博客说依赖倒置原则其实是在指导如何实现接口隔离原则。如果我前面的组件接口是 Role Interface，那么它就是抽象接口，意味着说，不论是消费端还是生产端，依赖的都是这个抽象接口。</p>
+<p><strong>大师</strong>：是的。</p>
+<p><strong>码意浓</strong>：在 C 语言里，这个抽象接口通常是函数指针类型。所以我其实已经满足依赖倒置原则了。</p>
+<p><strong>大师</strong>：没错。你可以定义一个函数指针类型作为抽象接口，然后在运行时传入具体的实现函数。这样，你的代码就依赖于这个抽象接口，而不是具体的实现函数。</p>
+<p><strong>码意浓</strong>：依赖倒置原则看上去高深莫测，但其实理解后感觉也非常简单。</p>
+<p><strong>大师</strong>：如果说你在架构师的修行路上，有很多层窗户纸要捅破的话，这就是非常非常重要的那层窗户纸。一旦你掌握了它，你就能轻松设计出松耦合的组件和架构，写出可测试的代码。</p>
+<p><strong>码意浓</strong>：太谢谢大师了，真的有种打通任督二脉的感觉！</p>
+<p><strong>大师</strong>：记住，实现 SOLID 原则是有成本的，高度可扩展的系统也是有成本的。你不可能在一开始就实现任意功能都可扩展、可替换。只有等你识别出变化点，然后再抽象出组件和接口。这样，你就可以让系统具有很好的扩展性。当然，这并不意味着你不能在一开始就设计好系统。相反，你应该尽量在设计阶段就考虑到可能的变化点，并提前规划好组件和接口。但是，随着项目的进展和需求的变化，你可能还需要不断地重构和演进代码。</p>
+<p><strong>码意浓</strong>：我明白了，实现 SOLID 原则确实需要权衡成本和收益。我会尝试在我的项目中应用这些原则，并根据实际情况进行调整和优化。</p>
+<p><strong>大师</strong>：好啊，等你的好消息！</p>
+
+
+    
+
+      </div>
+
+      <div class="row">
+        <div class="large-6 columns">
+        <p class="text-left" style="padding:15px 0px;">
+      
+          <a href="guan-yu-wowo-shi-mei-xue-song.html" 
+          title="Previous Post: 关于我">&laquo; 关于我</a>
+      
+        </p>
+        </div>
+        <div class="large-6 columns">
+      <p class="text-right" style="padding:15px 0px;">
+      
+          <a  href="17099718454993.html" 
+          title="Next Post: 嵌入式系统的架构设计——事件驱动架构的应用">嵌入式系统的架构设计——事件驱动架构的应用 &raquo;</a>
+      
+      </p>
+        </div>
+      </div>
+      <div class="comments-wrap">
+        <div class="share-comments">
+          
+
+          
+
+          
+        </div>
+      </div>
+    </div><!-- article-wrap -->
+  </div><!-- large 8 -->
+
+
+
+
+ <div class="large-4 medium-4 columns">
+  <div class="hide-for-small">
+    <div id="sidebar" class="sidebar">
+          <div id="site-info" class="site-info">
+            
+                <div class="site-a-logo"><img src="https://mxs-1256616343.cos.ap-chengdu.myqcloud.com/mweb-blog-logo.png" /></div>
+            
+                <h1>雪松</h1>
+                <div class="site-des">关于技术的思考</div>
+                <div class="social">
+
+
+
+
+
+
+
+
+
+<a target="_blank" class="github" target="_blank" href="https://github.com/meixuesong" title="GitHub">GitHub</a>
+<a target="_blank" class="email" href="mailto:meixuesong@gmail.com" title="Email">Email</a>
+  <a target="_blank" class="rss" href="atom.xml" title="RSS">RSS</a>
+                
+              	 </div>
+          	</div>
+
+             
+
+              <div id="site-categories" class="side-item ">
+                <div class="side-header">
+                  <h2>Categories</h2>
+                </div>
+                <div class="side-content">
+
+      	<p class="cat-list">
+         
+        </p>
+
+
+                </div>
+              </div>
+
+              <div id="site-categories" class="side-item">
+                <div class="side-header">
+                  <h2>Recent Posts</h2>
+                </div>
+                <div class="side-content">
+                <ul class="posts-list">
+	      
+		      
+			      <li class="post">
+			        <a href="guan-yu-wowo-shi-mei-xue-song.html">关于我</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="17102610195467.html">嵌入式系统的代码设计——实现灵活可扩展可替换的代码</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="17099718454993.html">嵌入式系统的架构设计——事件驱动架构的应用</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="17048572291123.html">嵌入式系统的质量——如何一次把事情做对？</a>
+			      </li>
+		     
+		  
+		      
+			      <li class="post">
+			        <a href="17042360951377.html">嵌入式系统的团队设计——团队拓扑</a>
+			      </li>
+		     
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		  
+		      
+		   
+		  		</ul>
+                </div>
+              </div>
+        </div><!-- sidebar -->
+      </div><!-- hide for small -->
+</div><!-- large 4 -->
+
+</div><!-- row -->
+
+ <div class="page-bottom clearfix">
+  <div class="row">
+   <p class="copyright">Copyright &copy; 2023
+Powered by <a target="_blank" href="http://www.mweb.im">MWeb</a>,&nbsp; 
+Theme used <a target="_blank" href="http://github.com">GitHub CSS</a>.</p>
+  </div>
+</div>
+
+        </section>
+      </div>
+    </div>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+figure{margin: 0;padding: 0;}
+figcaption{text-align:center;}
+
+/* PrismJS 1.14.0
+ http://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javascript */
+/**
+ * prism.js default theme for JavaScript, CSS and HTML
+ * Based on dabblet (http://dabblet.com)
+ * @author Lea Verou
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+    color: black;
+    background: none;
+    text-shadow: 0 1px white;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+    
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+    
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+}
+
+pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
+code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
+    text-shadow: none;
+    background:#b3d4fc;
+}
+
+pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
+code[class*="language-"]::selection, code[class*="language-"] ::selection {
+    text-shadow: none;
+    background: #b3d4fc;
+}
+
+@media print {
+    code[class*="language-"],
+    pre[class*="language-"] {
+        text-shadow: none;
+    }
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+    padding: 1em;
+    margin: .5em 0;
+    overflow: auto;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+    background: #F7F7F7;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+    padding: .1em;
+    border-radius: .3em;
+    white-space: normal;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: slategray;
+}
+
+.token.punctuation {
+    color: #999;
+}
+
+.namespace {
+    opacity: .7;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+    color: #905;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+    color: #690;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+    color: #9a6e3a;
+    background: hsla(0, 0%, 100%, .5);
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+    color: #07a;
+}
+
+.token.function,
+.token.class-name {
+    color: #DD4A68;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+    color: #e90;
+}
+
+.token.important,
+.token.bold {
+    font-weight: bold;
+}
+.token.italic {
+    font-style: italic;
+}
+
+.token.entity {
+    cursor: help;
+}
+
+
+pre[class*="language-"].line-numbers {
+    position: relative;
+    padding-left: 3.8em;
+    counter-reset: linenumber;
+}
+
+pre[class*="language-"].line-numbers > code {
+    position: relative;
+    white-space: inherit;
+}
+
+.line-numbers .line-numbers-rows {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    font-size: 100%;
+    left: -3.8em;
+    width: 3em; /* works for line-numbers below 1000 lines */
+    letter-spacing: -1px;
+    border-right: 1px solid #999;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+}
+
+    .line-numbers-rows > span {
+        pointer-events: none;
+        display: block;
+        counter-increment: linenumber;
+    }
+
+        .line-numbers-rows > span:before {
+            content: counter(linenumber);
+            color: #999;
+            display: block;
+            padding-right: 0.8em;
+            text-align: right;
+        }
+
+</style>
+
+  
+    
+
+    <script src="asset/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+      function fixSidebarHeight(){
+        var w1 = $('.markdown-body').height();
+          var w2 = $('#sidebar').height();
+          if (w1 > w2) { $('#sidebar').height(w1); };
+      }
+      $(function(){
+        fixSidebarHeight();
+      })
+      $(window).load(function(){
+          fixSidebarHeight();
+      });
+     
+    </script>
+
+
+
+  </body>
+</html>
