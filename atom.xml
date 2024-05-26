@@ -4,7 +4,7 @@
   <title><![CDATA[雪松]]></title>
   <link href="https://xuesong.tech/atom.xml" rel="self"/>
   <link href="https://xuesong.tech/"/>
-  <updated>2024-05-26T08:06:42+08:00</updated>
+  <updated>2024-05-26T10:44:22+08:00</updated>
   <id>https://xuesong.tech/</id>
   <author>
     <name><![CDATA[]]></name>
@@ -30,6 +30,7 @@
     <updated>2024-05-26T06:38:02+08:00</updated>
     <id>https://xuesong.tech/build-quality-in-for-ceo.html</id>
     <content type="html"><![CDATA[
+<p>本文为CEO和管理者提供了关于如何在软件开发过程中内建质量的观点，帮助他们避免常见的陷阱，提高团队的效率和产品的市场竞争力。</p>
 <h2><a id="%E6%9C%80%E5%85%88%E8%A2%AB%E7%89%BA%E7%89%B2%E7%9A%84%E9%80%9A%E5%B8%B8%E6%98%AF%E8%B4%A8%E9%87%8F%EF%BC%8C%E4%BD%8E%E8%B4%A8%E9%87%8F%E6%8A%8A%E5%9B%A2%E9%98%9F%E5%B8%A6%E5%85%A5%E6%B7%B1%E6%B8%8A" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>最先被牺牲的通常是质量，低质量把团队带入深渊</h2>
 <p>在项目管理中，我们常常面对范围变大、时间紧迫的挑战，而在这样的情境下，质量往往成为了第一个被牺牲的要素。</p>
 <p><img src="media/17166766821674/17166770739130.jpg" alt="项目管理三角形" style="width:200px;" /></p>
@@ -76,16 +77,17 @@
 <h2><a id="%E7%94%A8%E6%88%B7%E6%95%85%E4%BA%8B%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>用户故事的生命周期</h2>
 <p>从需求提出到最终上线，用户故事会经历一系列过程，这个完整过程可以用生产路径图(Path to Production)呈现。</p>
 <p>生产路径图可以帮助团队了解开发流程，并识别出延迟、风险和不一致的地方，用可视化的方法来持续改进整个流程。</p>
+<p><img src="media/17166766821674/17166914959594.jpg" alt="" /></p>
 <pre><code class="language-mermaid">flowchart LR
-需求提出 --&gt; 优先级排序
-优先级排序 --&gt; 需求分析
-需求分析 --&gt; KickOff:::qualityclass
-KickOff --&gt; 开发
-开发 --&gt; 持续集成:::qualityclass
-持续集成 --&gt; CodeReview:::qualityclass
-CodeReview --&gt; 测试:::qualityclass
-测试 --&gt; Showcase:::qualityclass
-Showcase --&gt; 发布
+    需求提出 --&gt; 优先级排序
+    优先级排序 --&gt; 需求分析
+    需求分析 --&gt; KickOff:::qualityclass
+    KickOff --&gt; 开发
+    开发 --&gt; 持续集成:::qualityclass
+    持续集成 --&gt; CodeReview:::qualityclass
+    CodeReview --&gt; 测试:::qualityclass
+    测试 --&gt; Showcase:::qualityclass
+    Showcase --&gt; 发布
 
 classDef qualityclass fill:#f96
 </code></pre>
@@ -207,6 +209,11 @@ classDef qualityclass fill:#f96
 <p>技术债需要得到 PO 支持。另外一个问题是，PO 常常难以理解技术债务的影响。因为它很难量化，即使静态扫描类工具可以扫出坏味道，但到底对业务有多大影响难以评估。所以他们常常让团队只开发业务功能，而从不改进内部质量。</p>
 <p>技术债管理方法：对技术债按四象限进行分类，并根据每个象限制定决策。</p>
 <p><img src="media/17166766821674/17166802156194.jpg" alt="" style="width:600px;" /></p>
+<h2><a id="%E6%80%BB%E7%BB%93" class="anchor" aria-hidden="true"><span class="octicon octicon-link"></span></a>总结</h2>
+<p>本文主要讨论了软件产品的质量内建方法。</p>
+<p>现代快速变化的商业环境要求软件要能够尽快交付价值，持续交付价值。因此质量内建应该融入包括需求分析、开发、测试和部署等各个环节。</p>
+<p>本文讨论了用户故事的全生命周期，并重点介绍了那些质量门禁实践，包括Kick Off、持续集成/持续部署流水线、Code Review、Desk Check、测试策略、Showcase演示等。</p>
+<p>最后，技术债务必须及时偿还，否则就会出现本文开头提到的情况。产品的低质量将团队带入无法自拔的深渊。</p>
 
 ]]></content>
   </entry>
